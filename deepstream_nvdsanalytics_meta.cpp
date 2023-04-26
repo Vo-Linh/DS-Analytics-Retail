@@ -30,26 +30,76 @@
 #include "nvds_analytics_meta.h"
 #include "analytics.h"
 
-/* custom_parse_nvdsanalytics_meta_data 
+/* custom_parse_nvdsanalytics_meta_data
  * and extract nvanalytics metadata */
-	extern "C" void
-analytics_custom_parse_nvdsanalytics_meta_data (NvDsMetaList *l_user, AnalyticsUserMeta *data)
-{
+extern "C" void
+analytics_custom_parse_nvdsanalytics_meta_data(NvDsFrameMeta *frame_meta, AnalyticsUserMeta *data)
+{	
+	NvDsObjectMeta *obj_meta = NULL;
+    NvDsMetaList * l_obj = NULL;
 	std::stringstream out_string;
-	NvDsUserMeta *user_meta = (NvDsUserMeta *) l_user->data;
-	/* convert to  metadata */
-	NvDsAnalyticsFrameMeta *meta =
-		(NvDsAnalyticsFrameMeta *) user_meta->user_meta_data;
-	/* Fill the data for entry, exit,occupancy */
-	data->lcc_cnt_entry = 0;
-	data->lcc_cnt_exit = 0;
-	data->lccum_cnt = 0;
-	data->lcc_cnt_entry = meta->objLCCumCnt["Entry"];
-	data->lcc_cnt_exit = meta->objLCCumCnt["Exit"];
+	/* Iterate user metadata in frames to search analytics metadata */
+	for (NvDsMetaList *l_user = frame_meta->frame_user_meta_list;
+		 l_user != NULL; l_user = l_user->next)
+	{
+		NvDsUserMeta *user_meta = (NvDsUserMeta *)l_user->data;
+		if (user_meta->base_meta.meta_type != NVDS_USER_FRAME_META_NVDSANALYTICS)
+			continue;
 
-	if (meta->objLCCumCnt["Entry"]> meta->objLCCumCnt["Exit"])
-		data->lccum_cnt = meta->objLCCumCnt["Entry"] - meta->objLCCumCnt["Exit"];
-	// g_print("Enter: %d, Exit: %d\n", data->lcc_cnt_entry,data->lcc_cnt_exit);
+		/* convert to  metadata */
+		NvDsAnalyticsFrameMeta *meta =
+			(NvDsAnalyticsFrameMeta *)user_meta->user_meta_data;
+		/* Get the labels from nvdsanalytics config file */
+		for (std::pair<std::string, uint32_t> status : meta->objInROIcnt)
+		{
+			out_string << " Objs in ROI ";
+			out_string << status.first;
+			out_string << " = ";
+			out_string << status.second;
+		}
+
+		// NvDsObjectMeta *meta_obj =
+		// 	(NvDsObjectMeta *)user_meta->user_meta_data;
+		
+		// data->top = meta_obj->rect_params.top;
+		// data->left = meta_obj->rect_params.left;
+		// data->height = meta_obj->rect_params.height;
+		// data->width = meta_obj->rect_params.width;
+
+		// out_string << "Object "<< data->top << "| " << data->left;
+
+	}
+	for (l_obj = frame_meta->obj_meta_list; l_obj != NULL;
+		 l_obj = l_obj->next)
+	{
+		obj_meta = (NvDsObjectMeta *)(l_obj->data);
+		data->top = obj_meta->rect_params.top;
+		data->left = obj_meta->rect_params.left;
+		data->height = obj_meta->rect_params.height;
+		data->width = obj_meta->rect_params.width;
+
+		out_string << "Object "<< data->top << "| " << data->left;
+		// Access attached user meta for each object
+		for (NvDsMetaList *l_user_meta = obj_meta->obj_user_meta_list; l_user_meta != NULL;
+			 l_user_meta = l_user_meta->next)
+		{
+			NvDsUserMeta *user_meta = (NvDsUserMeta *)(l_user_meta->data);
+			if (user_meta->base_meta.meta_type == NVDS_USER_OBJ_META_NVDSANALYTICS)
+			{
+				NvDsAnalyticsObjInfo *user_meta_data =
+					(NvDsAnalyticsObjInfo *)user_meta->user_meta_data;
+				if (user_meta_data->dirStatus.length())
+				{
+					out_string << " object " << obj_meta->object_id << " is moving in " << user_meta_data->dirStatus;
+				}
+			}
+		}
+	}
+
+	if (out_string.str().size())
+	{
+		g_print("Frame Number = %d of Stream = %d,  %s\n",
+				frame_meta->frame_num, frame_meta->pad_index,
+				out_string.str().c_str());
+	}
 }
-
-

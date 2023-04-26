@@ -417,7 +417,7 @@ generate_event_msg_meta (gpointer data, gint class_id, gboolean useTs,
 /*
  * Access analytics data.
  */
-void analytics_custom_parse_nvdsanalytics_meta_data (NvDsMetaList *l_user, AnalyticsUserMeta *data);
+void analytics_custom_parse_nvdsanalytics_meta_data (NvDsFrameMeta *frame_meta, AnalyticsUserMeta *data);
 
 /**
  * Callback function to be called once all inferences (Primary + Secondary)
@@ -461,14 +461,10 @@ bbox_generated_probe_after_analytics (AppCtx * appCtx, GstBuffer * buf,
 	}
 
 	GList *l;
-	NvDsMetaList *l_analyticsuser;
-	l_analyticsuser = frame_meta->frame_user_meta_list;
 
 	AnalyticsUserMeta *user_data = 
 	    (AnalyticsUserMeta *) g_malloc0(sizeof(AnalyticsUserMeta));
-	if (l_analyticsuser != NULL) {
-	    analytics_custom_parse_nvdsanalytics_meta_data(l_analyticsuser, user_data);
-	}
+	    analytics_custom_parse_nvdsanalytics_meta_data(frame_meta, user_data);
 	user_data->source_id = stream_id;
 
 	//		l_analyticsuser = l_analyticsuser->next;

@@ -12,6 +12,11 @@ typedef struct
     guint32 lcc_cnt_entry;
     guint32 source_id;
 
+    float top;
+    float left;
+    float height;
+    float width;
+
 } AnalyticsUserMeta;
 
 #endif
