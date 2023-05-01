@@ -103,6 +103,7 @@ msg-conv-config=dstest5_msgconv_sample_config.txt
 #(257): PAYLOAD_CUSTOM   - Custom schema payload
 msg-conv-payload-type=1
 msg-broker-proto-lib=/opt/nvidia/deepstream/deepstream-5.1/lib/libnvds_kafka_proto.so
+msg-conv-msg2p-lib=/opt/nvidia/deepstream/deepstream-5.1/sources/apps/sample_apps/deepstream-occupancy-analytics/libs/nvmsgconv/libnvds_msgconv.so
 #Provide your msg-broker-conn-str here
 msg-broker-conn-str=localhost;9092;quickstart-events
 #topic=<topic>
@@ -146,7 +147,7 @@ msg-conv-config=dstest5_msgconv_sample_config.txt
 #(257): PAYLOAD_CUSTOM   - Custom schema payload
 msg-conv-payload-type=1
 # Name of library having custom implementation.
-#msg-conv-msg2p-lib=<val>
+msg-conv-msg2p-lib=/opt/nvidia/deepstream/deepstream-5.1/sources/apps/sample_apps/deepstream-occupancy-analytics/libs/nvmsgconv/libnvds_msgconv.so
 # Id of component in case only selected message to parse.
 #msg-conv-comp-id=<val>
 
@@ -222,6 +223,7 @@ ll-config-file=tracker_config.yml
 gpu-id=1
 #enable-batch-process applicable to DCF only
 enable-batch-process=0
+enable-past-frame=1
 
 
 [nvds-analytics]

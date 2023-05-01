@@ -11,7 +11,8 @@ typedef struct
     guint32 lccum_cnt;
     guint32 lcc_cnt_entry;
     guint32 source_id;
-
+    guint64 object_id;
+    
     float top;
     float left;
     float height;

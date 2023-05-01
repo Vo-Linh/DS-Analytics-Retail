@@ -50,7 +50,11 @@ class-id=-0
 #enable or disable following feature
 enable=1
 #ROI to filter select objects, and remove from meta data
-roi-RF=295;643;579;634;642;913;56;828
+roi-RF=295;43;749;34;742;413;294;428
+roi-RA=1095;43;1609;34;1602;413;1094;428
+roi-RB=295;643;579;634;642;913;56;828
+roi-RC=295;643;579;634;642;913;56;828
+roi-RD=295;643;579;634;642;913;56;828
 #remove objects in the ROI
 inverse-roi=0
 class-id=0
@@ -80,7 +84,7 @@ extended=0
 mode=balanced
 
 [line-crossing-stream-1]
-enable=1
+enable=0
 #Label;direction;lc
 line-crossing-Exit=900;1000;850;900;300;1000;1350;800;
 line-crossing-Entry=750;670;800;750;300;850;1350;650

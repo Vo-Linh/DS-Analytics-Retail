@@ -57,28 +57,18 @@ analytics_custom_parse_nvdsanalytics_meta_data(NvDsFrameMeta *frame_meta, Analyt
 			out_string << " = ";
 			out_string << status.second;
 		}
-
-		// NvDsObjectMeta *meta_obj =
-		// 	(NvDsObjectMeta *)user_meta->user_meta_data;
-		
-		// data->top = meta_obj->rect_params.top;
-		// data->left = meta_obj->rect_params.left;
-		// data->height = meta_obj->rect_params.height;
-		// data->width = meta_obj->rect_params.width;
-
-		// out_string << "Object "<< data->top << "| " << data->left;
-
 	}
 	for (l_obj = frame_meta->obj_meta_list; l_obj != NULL;
 		 l_obj = l_obj->next)
 	{
 		obj_meta = (NvDsObjectMeta *)(l_obj->data);
+		data->object_id = obj_meta->object_id; 
 		data->top = obj_meta->rect_params.top;
 		data->left = obj_meta->rect_params.left;
 		data->height = obj_meta->rect_params.height;
 		data->width = obj_meta->rect_params.width;
 
-		out_string << "Object "<< data->top << "| " << data->left;
+		out_string << " Object "<< data->object_id<< " | "<<data->top << "| " << data->left;
 		// Access attached user meta for each object
 		for (NvDsMetaList *l_user_meta = obj_meta->obj_user_meta_list; l_user_meta != NULL;
 			 l_user_meta = l_user_meta->next)

@@ -232,6 +232,7 @@ typedef struct NvDsEventMsgMeta {
   guint source_id;
   guint lccum_cnt_entry;
   guint lccum_cnt_exit;
+  guint person_id; 
 } NvDsEventMsgMeta;
 
 /**
