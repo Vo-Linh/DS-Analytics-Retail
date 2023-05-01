@@ -33,7 +33,7 @@ config-height=1080
 #         2: Display all info from 1 plus information about counts
 osd-mode=2
 #Set OSD font size that has to be displayed
-display-font-size=12
+display-font-size=10
 
 ## Per stream configuration
 [roi-filtering-stream-0]
@@ -43,21 +43,22 @@ enable=1
 roi-RF=295;643;579;634;642;913;56;828
 #remove objects in the ROI
 inverse-roi=0
-class-id=-0
+class-id=-1
 
 ## Per stream configuration
 [roi-filtering-stream-1]
 #enable or disable following feature
 enable=1
 #ROI to filter select objects, and remove from meta data
-roi-RF=295;43;749;34;742;413;294;428
-roi-RA=1095;43;1609;34;1602;413;1094;428
-roi-RB=295;643;579;634;642;913;56;828
-roi-RC=295;643;579;634;642;913;56;828
-roi-RD=295;643;579;634;642;913;56;828
+roi-RF=290;43;789;34;782;380;290;380
+roi-RA=1075;43;1609;34;1602;370;1074;378
+roi-RB=1635;43;1913;34;1912;380;1634;388
+roi-RC=190;387;489;387;482;653;190;653
+#roi-RD=295;643;579;634;642;913;56;828
 #remove objects in the ROI
 inverse-roi=0
-class-id=0
+class-id=-1
+object-threshold=40
 
 
 [overcrowding-stream-1]
