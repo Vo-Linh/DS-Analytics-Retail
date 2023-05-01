@@ -1944,4 +1944,14 @@ id=XYZ
 source=OpenALR
 version=1.0
 
+[roi0]
+enable=1
+label=RF
+roi=295;643;579;634;642;913;56;828
 
+[roi1]
+enable=1
+label=RB
+roi=290;43;789;34;782;380;290;380
+label=RA
+roi=1075;43;1609;34;1602;370;1074;378
