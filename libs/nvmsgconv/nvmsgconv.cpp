@@ -25,6 +25,7 @@ using namespace std;
 #define CONFIG_GROUP_SENSOR "sensor"
 #define CONFIG_GROUP_PLACE "place"
 #define CONFIG_GROUP_ANALYTICS "analytics"
+#define CONFIG_GROUP_ROI "roi"
 
 #define CONFIG_KEY_COORDINATE "coordinate"
 #define CONFIG_KEY_DESCRIPTION "description"
@@ -37,6 +38,8 @@ using namespace std;
 #define CONFIG_KEY_SOURCE "source"
 #define CONFIG_KEY_TYPE "type"
 #define CONFIG_KEY_VERSION "version"
+#define CONFIG_KEY_LABEL "label"
+#define CONFIG_KEY_ROI "roi"
 
 #define CONFIG_KEY_PLACE_SUB_FIELD1 "place-sub-field1"
 #define CONFIG_KEY_PLACE_SUB_FIELD2 "place-sub-field2"
@@ -89,11 +92,18 @@ struct NvDsAnalyticsObject
   string version;
 };
 
+struct NvDsROIObject
+{
+  string label;
+  string roi;
+};
+
 struct NvDsPayloadPriv
 {
   unordered_map<int, NvDsSensorObject> sensorObj;
   unordered_map<int, NvDsPlaceObject> placeObj;
   unordered_map<int, NvDsAnalyticsObject> analyticsObj;
+  unordered_map<int, NvDsROIObject> roiObj;
 };
 
 static void
@@ -333,6 +343,54 @@ generate_analytics_module_object(NvDsMsg2pCtx *ctx, NvDsEventMsgMeta *meta)
   return analyticsObj;
 }
 
+static JsonArray *
+generate_roi_module_object(NvDsMsg2pCtx *ctx, NvDsEventMsgMeta *meta)
+{
+  NvDsPayloadPriv *privObj = NULL;
+  NvDsROIObject *dsObj = NULL;
+  JsonArray *roiArray;
+
+  privObj = (NvDsPayloadPriv *)ctx->privData;
+
+  roiArray = json_array_new();
+
+  stringstream ss;
+  for (auto i = 0; i < meta->num_roi; i++)
+  {
+    auto idMap = privObj->roiObj.find(meta->source_id + i);
+
+    if (idMap != privObj->roiObj.end())
+    {
+      dsObj = &idMap->second;
+    }
+    else
+    {
+      cout << "No entry for " CONFIG_GROUP_ROI << meta->source_id + i
+           << " in configuration file" << endl;
+      return NULL;
+    }
+
+    /* roi object
+     * "roiModule": {
+         "id": "string",
+         "description": "Vehicle Detection and License Plate Recognition",
+         "confidence": 97.79,
+         "source": "OpenALR",
+         "version": "string"
+       }
+     */
+
+    // roi object
+    ss.str("");
+    ss.clear();
+
+    ss << dsObj->label << "|" << dsObj->roi;
+    json_array_add_string_element(roiArray, ss.str().c_str());
+  }
+
+  return roiArray;
+}
+
 static JsonObject *
 generate_event_object(NvDsMsg2pCtx *ctx, NvDsEventMsgMeta *meta)
 {
@@ -393,6 +451,7 @@ generate_object_object(NvDsMsg2pCtx *ctx, NvDsEventMsgMeta *meta)
   // bbox sub object
   objectObj = json_object_new();
   jobject = json_object_new();
+  json_object_set_int_member(jobject, "id", meta->person_id);
   json_object_set_int_member(jobject, "topleftx", meta->bbox.left);
   json_object_set_int_member(jobject, "toplefty", meta->bbox.top);
   json_object_set_int_member(jobject, "bottomrightx", meta->bbox.left + meta->bbox.width);
@@ -407,10 +466,7 @@ generate_schema_message(NvDsMsg2pCtx *ctx, NvDsEventMsgMeta *meta)
 {
   JsonNode *rootNode;
   JsonObject *rootObj;
-  JsonObject *placeObj;
-  JsonObject *sensorObj;
-  JsonObject *analyticsObj;
-  JsonObject *eventObj;
+  JsonArray *roiArray;
   JsonObject *objectObj;
   gchar *message;
 
@@ -420,36 +476,20 @@ generate_schema_message(NvDsMsg2pCtx *ctx, NvDsEventMsgMeta *meta)
   uuid_generate_random(msgId);
   uuid_unparse_lower(msgId, msgIdStr);
 
-  // place object
-  placeObj = generate_place_object(ctx, meta);
-
-  // sensor object
-  sensorObj = generate_sensor_object(ctx, meta);
-
-  // analytics object
-  analyticsObj = generate_analytics_module_object(ctx, meta);
-
   // object object
   objectObj = generate_object_object(ctx, meta);
 
-  // event object
-  eventObj = generate_event_object(ctx, meta);
+  // roi object
+  roiArray = generate_roi_module_object(ctx, meta);
 
   // root object
   rootObj = json_object_new();
   json_object_set_string_member(rootObj, "messageid", msgIdStr);
-  json_object_set_string_member(rootObj, "mdsversion", "1.0");
+  json_object_set_int_member(rootObj, "Frame id", meta->frameId);
+  json_object_set_int_member(rootObj, "source", meta->source_id);
   json_object_set_string_member(rootObj, "@timestamp", meta->ts);
-  json_object_set_object_member(rootObj, "place", placeObj);
-  json_object_set_object_member(rootObj, "sensor", sensorObj);
-  json_object_set_object_member(rootObj, "analyticsModule", analyticsObj);
   json_object_set_object_member(rootObj, "object", objectObj);
-  json_object_set_object_member(rootObj, "event", eventObj);
-
-  if (meta->videoPath)
-    json_object_set_string_member(rootObj, "videoPath", meta->videoPath);
-  else
-    json_object_set_string_member(rootObj, "videoPath", "");
+  json_object_set_array_member(rootObj, "roi", roiArray);
 
   rootNode = json_node_new(JSON_NODE_OBJECT);
   json_node_set_object(rootNode, rootObj);
@@ -536,28 +576,16 @@ generate_deepstream_message_minimal(NvDsMsg2pCtx *ctx, NvDsEvent *events, guint 
   }
   */
 
-  /*
-  An example object with Vehicle object-type
-  {
-    "version": "4.0",
-    "id": "frame-id",
-    "@timestamp": "2018-04-11T04:59:59.828Z",
-    "sensorId": "sensor-id",
-    "objects": [
-        "957|1834|150|1918|215|Vehicle|#|sedan|Bugatti|M|blue|CA 444|California|0.8",
-        "..........."
-    ]
-  }
-   */
-
   JsonNode *rootNode;
   JsonObject *jobject;
-  JsonArray *jArray;
+  JsonArray *objectArray;
+  // JsonArray *roiArray;
+
   guint i;
   stringstream ss;
   gchar *message = NULL;
 
-  jArray = json_array_new();
+  objectArray = json_array_new();
 
   for (i = 0; i < size; i++)
   {
@@ -570,20 +598,23 @@ generate_deepstream_message_minimal(NvDsMsg2pCtx *ctx, NvDsEvent *events, guint 
        << "|" << meta->bbox.left + meta->bbox.width << "|" << meta->bbox.top + meta->bbox.height
        << "|" << object_enum_to_str(meta->objType, meta->objectId);
 
-    json_array_add_string_element(jArray, ss.str().c_str());
+    json_array_add_string_element(objectArray, ss.str().c_str());
   }
 
   // It is assumed that all events / objects are associated with same frame.
   // Therefore ts / sensorId / frameId of first object can be used.
+  // roiObject = json_object_new();
+  // roiObject = generate_roi_module_object(ctx, events[0].metadata);
 
   jobject = json_object_new();
   json_object_set_string_member(jobject, "version", "4.0");
   json_object_set_int_member(jobject, "Frame id", events[0].metadata->frameId);
   json_object_set_string_member(jobject, "@timestamp", events[0].metadata->ts);
 
-  json_object_set_array_member(jobject, "objects", jArray);
+  json_object_set_array_member(jobject, "objects", objectArray);
 
   rootNode = json_node_new(JSON_NODE_OBJECT);
+  // json_object_set_object_member(jobject, "roi", roiObject);
   json_node_set_object(rootNode, jobject);
 
   message = json_to_string(rootNode, TRUE);
@@ -980,6 +1011,96 @@ done:
 }
 
 static bool
+nvds_msg2p_parse_roi(NvDsMsg2pCtx *ctx, GKeyFile *key_file, gchar *group)
+{
+  bool ret = false;
+  bool isEnabled = false;
+  gchar **keys = NULL;
+  gchar **key = NULL;
+  GError *error = NULL;
+  NvDsPayloadPriv *privObj = NULL;
+  NvDsROIObject roiObj;
+  gint moduleId;
+  gchar *keyVal;
+
+  if (sscanf(group, CONFIG_GROUP_ROI "%u", &moduleId) < 1)
+  {
+    cout << "Wrong roi module group name " << group << endl;
+    return ret;
+  }
+
+  privObj = (NvDsPayloadPriv *)ctx->privData;
+
+  auto idMap = privObj->roiObj.find(moduleId);
+
+  if (idMap != privObj->roiObj.end())
+  {
+    cout << "Duplicate entries for " << group << endl;
+    return ret;
+  }
+
+  isEnabled = g_key_file_get_boolean(key_file, group, CONFIG_KEY_ENABLE,
+                                     &error);
+  if (!isEnabled)
+  {
+    // Not enabled, skip the parsing of keys.
+    ret = true;
+    goto done;
+  }
+  else
+  {
+    g_key_file_remove_key(key_file, group, CONFIG_KEY_ENABLE,
+                          &error);
+    CHECK_ERROR(error);
+  }
+
+  keys = g_key_file_get_keys(key_file, group, NULL, &error);
+  CHECK_ERROR(error);
+
+  for (key = keys; *key; key++)
+  {
+    keyVal = NULL;
+    if (!g_strcmp0(*key, CONFIG_KEY_LABEL))
+    {
+      keyVal = g_key_file_get_string(key_file, group,
+                                     CONFIG_KEY_LABEL, &error);
+      roiObj.label = keyVal;
+      CHECK_ERROR(error);
+    }
+    else if (!g_strcmp0(*key, CONFIG_KEY_ROI))
+    {
+      keyVal = g_key_file_get_string(key_file, group,
+                                     CONFIG_KEY_ROI, &error);
+      roiObj.roi = keyVal;
+      CHECK_ERROR(error);
+    }
+    else
+    {
+      cout << "Unknown key " << *key << " for group [" << group << "]\n";
+    }
+
+    if (keyVal)
+      g_free(keyVal);
+  }
+
+  privObj->roiObj.insert(make_pair(moduleId, roiObj));
+
+  ret = true;
+
+done:
+  if (error)
+  {
+    g_error_free(error);
+  }
+  if (keys)
+  {
+    g_strfreev(keys);
+  }
+
+  return ret;
+}
+
+static bool
 nvds_msg2p_parse_csv(NvDsMsg2pCtx *ctx, const gchar *file)
 {
   NvDsPayloadPriv *privObj = NULL;
@@ -1103,6 +1224,10 @@ nvds_msg2p_parse_key_value(NvDsMsg2pCtx *ctx, const gchar *file)
     else if (!strncmp(*group, CONFIG_GROUP_ANALYTICS, strlen(CONFIG_GROUP_ANALYTICS)))
     {
       retVal = nvds_msg2p_parse_analytics(ctx, cfgFile, *group);
+    }
+    else if (!strncmp(*group, CONFIG_GROUP_ROI, strlen(CONFIG_GROUP_ROI)))
+    {
+      retVal = nvds_msg2p_parse_roi(ctx, cfgFile, *group);
     }
     else
     {
