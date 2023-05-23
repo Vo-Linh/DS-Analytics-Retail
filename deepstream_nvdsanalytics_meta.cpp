@@ -86,10 +86,10 @@ analytics_custom_parse_nvdsanalytics_meta_data(NvDsFrameMeta *frame_meta, Analyt
 		}
 	}
 
-	if (out_string.str().size())
-	{
-		g_print("Frame Number = %d of Stream = %d,  %s\n",
-				frame_meta->frame_num, frame_meta->pad_index,
-				out_string.str().c_str());
-	}
+	// if (out_string.str().size())
+	// {
+	// 	g_print("Frame Number = %d of Stream = %d,  %s\n",
+	// 			frame_meta->frame_num, frame_meta->pad_index,
+	// 			out_string.str().c_str());
+	// }
 }

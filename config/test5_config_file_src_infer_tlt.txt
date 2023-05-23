@@ -72,7 +72,6 @@ smart-rec-file-prefix=smart_record
 smart-rec-video-cache=10
 
 
-
 [sink0]
 enable=0
 type=2
@@ -101,12 +100,11 @@ msg-conv-config=dstest5_msgconv_sample_config.txt
 #(1): PAYLOAD_DEEPSTREAM_MINIMAL - Deepstream schema payload minimal
 #(256): PAYLOAD_RESERVED - Reserved type
 #(257): PAYLOAD_CUSTOM   - Custom schema payload
-msg-conv-payload-type=1
+msg-conv-payload-type=0
 msg-broker-proto-lib=/opt/nvidia/deepstream/deepstream-5.1/lib/libnvds_kafka_proto.so
-msg-conv-msg2p-lib=/opt/nvidia/deepstream/deepstream-5.1/sources/apps/sample_apps/deepstream-occupancy-analytics/libs/nvmsgconv/libnvds_msgconv.so
+msg-conv-msg2p-lib=/opt/nvidia/deepstream/deepstream-5.1/sources/apps/sample_apps/DS-Analytics-Retail/libs/nvmsgconv/libnvds_msgconv.so
 #Provide your msg-broker-conn-str here
 msg-broker-conn-str=localhost;9092;quickstart-events
-#topic=<topic>
 #Optional:
 #msg-broker-config=../../deepstream-test4/cfg_kafka.txt
 
@@ -121,7 +119,7 @@ container=1
 codec=3
 sync=1
 bitrate=2000000
-output-file=test_lab.mp4
+output-file=test_lab_2.mp4
 
 [sink3]
 enable=1
@@ -138,6 +136,7 @@ udp-port=5400
 # sink type = 6 by default creates msg converter + broker.
 # To use multiple brokers use this group for converter and use
 # sink type = 6 with disable-msgconv = 1
+
 [message-converter]
 enable=0
 msg-conv-config=dstest5_msgconv_sample_config.txt
@@ -147,7 +146,7 @@ msg-conv-config=dstest5_msgconv_sample_config.txt
 #(257): PAYLOAD_CUSTOM   - Custom schema payload
 msg-conv-payload-type=1
 # Name of library having custom implementation.
-msg-conv-msg2p-lib=/opt/nvidia/deepstream/deepstream-5.1/sources/apps/sample_apps/deepstream-occupancy-analytics/libs/nvmsgconv/libnvds_msgconv.so
+msg-conv-msg2p-lib=/opt/nvidia/deepstream/deepstream-5.1/sources/apps/sample_apps/DS-Analytics-Retail/libs/nvmsgconv/libnvds_msgconv.so
 # Id of component in case only selected message to parse.
 #msg-conv-comp-id=<val>
 
@@ -218,8 +217,8 @@ tracker-width=640
 tracker-height=288
 ll-lib-file=/opt/nvidia/deepstream/deepstream-5.1/lib/libnvds_nvdcf.so
 #ll-config-file required for DCF/IOU only
-ll-config-file=tracker_config.yml
-#ll-config-file=iou_config.txt
+#ll-config-file=tracker_config.yml
+ll-config-file=iou_config.txt
 gpu-id=1
 #enable-batch-process applicable to DCF only
 enable-batch-process=0

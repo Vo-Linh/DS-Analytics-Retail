@@ -20,41 +20,5 @@
 # DEALINGS IN THE SOFTWARE.
 ################################################################################
 
-# The values in the config file are overridden by values set through GObject
-# properties.
-
-[property]
-enable=1
-#Width height used for configuration to which below configs are configured
-config-width=1920
-config-height=1080
-#osd-mode 0: Dont display any lines, rois and text
-#         1: Display only lines, rois and static text i.e. labels
-#         2: Display all info from 1 plus information about counts
-osd-mode=2
-#Set OSD font size that has to be displayed
-display-font-size=10
-
-## Per stream configuration
-[roi-filtering-stream-0]
-#enable or disable following feature
-enable=1
-#ROI to filter select objects, and remove from meta data
-roi-RF=290;43;789;34;782;380;290;380
-roi-RA=1075;43;1609;34;1602;570;1074;578
-roi-RB=1635;43;1913;34;1912;380;1634;388
-roi-RC=190;487;789;487;782;953;190;953
-#roi-RD=295;643;579;634;642;913;56;828
-#remove objects in the ROI
-inverse-roi=0
-class-id=-1
-
-[roi-filtering-stream-1]
-#enable or disable following feature
-enable=1
-#ROI to filter select objects, and remove from meta data
-roi-RF=290;43;789;34;782;380;290;380
-roi-RA=1075;43;1609;34;1602;370;1074;378
-#remove objects in the ROI
-inverse-roi=0
-class-id=-1
+[IOU_CONFIG]
+iou-threshold=0.6

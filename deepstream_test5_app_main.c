@@ -416,6 +416,7 @@ generate_event_msg_meta(gpointer data, gint class_id, gboolean useTs,
 	meta->bbox.width = obj_params->width;
 
 	meta->person_id = obj_params->object_id;
+	meta->num_roi = 4;
 
 	//    g_print("source id: %d, Enter: %d, Exit: %d\n", meta->source_id, meta->lccum_cnt_entry, meta->lccum_cnt_exit);
 }

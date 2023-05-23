@@ -370,16 +370,6 @@ generate_roi_module_object(NvDsMsg2pCtx *ctx, NvDsEventMsgMeta *meta)
       return NULL;
     }
 
-    /* roi object
-     * "roiModule": {
-         "id": "string",
-         "description": "Vehicle Detection and License Plate Recognition",
-         "confidence": 97.79,
-         "source": "OpenALR",
-         "version": "string"
-       }
-     */
-
     // roi object
     ss.str("");
     ss.clear();
